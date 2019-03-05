@@ -116,29 +116,20 @@ if ! shopt -oq posix; then
   fi
 fi
 
-# Taken from http://www.cygwin.com/ml/cygwin/2001-06/msg00537.html
-SSH_ENV=$HOME/.ssh/environment
-
-function start_agent {
-     echo "Initialising SSH agent..."
-     /usr/bin/ssh-agent -t 300 | sed 's/^echo/#echo/' > ${SSH_ENV}
-     echo succeeded
-     chmod 600 ${SSH_ENV}
-     . ${SSH_ENV} > /dev/null
-     #/usr/bin/ssh-add;
-}
-
-# Source SSH settings, if applicable
-
-if [ -z "${SSH_AUTH_SOCK}" ]; then
-	if [ -f "${SSH_ENV}" ]; then
-		. ${SSH_ENV} > /dev/null
-		ps ${SSH_AGENT_PID} | grep ssh-agent$ > /dev/null || {
-		start_agent;
-	}
-	else
-		start_agent;
-	fi
+if [ -f /usr/bin/keychain ]; then
+    /usr/bin/keychain --gpg2 --quiet
+    source $HOME/.keychain/$HOSTNAME-sh
 fi
 
+export LC_ALL=en_US.UTF-8
+export LANG=en_US.UTF-8
+export LANGUAGE=en_US.UTF-8
+
 [[ ":$PATH:" != *":${HOME}/bin:"* ]] && export PATH=${HOME}/bin:${PATH}
+[[ ":$PATH:" != *":${HOME}/.local/bin:"* ]] && export PATH=${HOME}/.local/bin:${PATH}
+
+# added by travis gem
+[ -f /home/men/.travis/travis.sh ] && source /home/men/.travis/travis.sh
+
+[ -f /home/men/.asdf/asdf.sh ] && source /home/men/.asdf/asdf.sh
+[ -f /home/men/.asdf/completions/asdf.bash ] && source /home/men/.asdf/completions/asdf.bash
